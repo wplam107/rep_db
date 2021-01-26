@@ -1,1 +1,1 @@
-# Data Acquisition and Database Loading for US Representitive Data
+# Data Acquisition and Database Loading for US Representative Data
