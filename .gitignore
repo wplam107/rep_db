@@ -128,8 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# API Keys
-config.ini
+# API Keys, Authentication
+auth/
 
 # Virtual Environments
 db-env/
