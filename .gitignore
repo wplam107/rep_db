@@ -129,7 +129,9 @@ dmypy.json
 .pyre/
 
 # API Keys, Authentication
-auth/
+*.ini
+*.json
+auth.txt
 
 # Virtual Environments
 db-env/
