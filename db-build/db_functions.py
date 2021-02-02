@@ -86,4 +86,4 @@ def batch_insert_members(members, db):
     f_string = f'Batch Length: {batch_len}, Members Length: {members_len}'
     assert batch_len == members_len, f_string
     
-    print f'{batch_len} members inserted'
+    print(f'{batch_len} members inserted')

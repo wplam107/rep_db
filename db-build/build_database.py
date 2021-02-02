@@ -1,7 +1,7 @@
 import configparser
 import firebase_admin
 from firebase_admin import credentials, firestore
-from functions import get_house_ids, get_member_data, member_cleaner, batch_insert_members
+from db_functions import get_house_ids, get_member_data, member_cleaner, batch_insert_members
 
 # Script
 def main():
