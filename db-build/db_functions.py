@@ -4,24 +4,24 @@ import re
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-def get_house_ids(congress, header, API_ROOT):
+def get_house_ids(congress, header, api_root):
     '''
     Function to get house members' ProPublica ID by congress number
     '''
 
-    call_string = API_ROOT + f'{congress}/house/members.json'
+    call_string = api_root + f'{congress}/house/members.json'
     r = requests.get(call_string, headers=header)
     result = r.json()['results'][0]['members']
     member_ids = [ member['id'] for member in result ]
     
     return member_ids
 
-def get_member_data(member, header, API_ROOT):
+def get_member_data(member, header, api_root):
     '''
     Function to get house member's data
     '''
     
-    call_string = API_ROOT + f'members/{member}.json'
+    call_string = api_root + f'members/{member}.json'
     r = requests.get(call_string, headers=header)
     result = r.json()['results'][0]
     
@@ -39,30 +39,23 @@ def member_cleaner(member):
     roles = member['roles']
     roles.sort(key=lambda x: x['congress'], reverse=True)
     fec_id = roles[0]['fec_candidate_id'] # Most recent FEC candidate ID
+    congresses = [ role['congress'] for role in roles ]
     
     mem_dict = {
         '_id': member['id'],
-        'bio': {
-            'first_name': member['first_name'],
-            'middle_name': member['middle_name'],
-            'last_name': member['last_name'],
-            'dob': to_date(member['date_of_birth']),
-            'gender': member['gender'],
-            'current_party': member['current_party'],
-        },
-        'activity': {
-            'last_updated': to_date(member['last_updated'][:10]), # Ignore time
-            'in_office': member['in_office'],
-        },
-        'other_ids': {
-            'google_id': member['google_entity_id'],
-            'votesmart_id': member['votesmart_id'],
-            'govtrack_id': member['govtrack_id'],
-            'cspan_id': member['cspan_id'],
-            'crp_id': member['crp_id'],
-            'fec_id': fec_id,
-        },
-        'roles': member['roles'],   
+        'first_name': member['first_name'],
+        'middle_name': member['middle_name'],
+        'last_name': member['last_name'],
+        'dob': to_date(member['date_of_birth']),
+        'gender': member['gender'],
+        'current_party': member['current_party'],
+        'google_id': member['google_entity_id'],
+        'votesmart_id': member['votesmart_id'],
+        'govtrack_id': member['govtrack_id'],
+        'cspan_id': member['cspan_id'],
+        'crp_id': member['crp_id'],
+        'fec_id': fec_id,
+        'congresses': congresses,   
     }
     
     return mem_dict
