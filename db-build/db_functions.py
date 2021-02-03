@@ -80,3 +80,85 @@ def batch_insert_members(members, db):
     assert batch_len == members_len, f_string
     
     print(f'{batch_len} members inserted')
+
+def get_roll_call_vote(congress, session, roll_call_number, api_root, header):
+    '''
+    Function to get singular roll call vote
+    '''
+    
+    call_string = api_root + f'{congress}/house/sessions/{session}/votes/{roll_call_number}.json'
+    r = requests.get(call_string, headers=header)
+    
+    # Ignore nominations, quorum, and non-bill actions
+    try:
+        result = r.json()['results']['votes']['vote']
+        if (result['bill'] == {}) or (result['bill']['number'] == 'QUORUM'):
+            return None
+        else:
+            return result
+        
+    except:
+        return None
+
+def rc_clean(rc_vote):
+    '''
+    Function to keep relevent information from roll call
+    '''
+
+    if rc_vote != None:
+        bill = rc_vote['bill']
+        vote_dict = {
+            'congress': rc_vote['congress'],
+            'session': rc_vote['session'],
+            'roll_call': rc_vote['roll_call'],
+            'bill_id': bill['bill_id'],
+            'api_call_id': ''.join(bill['number'].split('.')).lower(),
+            'title': bill['title'],
+            'description': rc_vote['description'],
+            'date': to_date(rc_vote['date']),
+            'result': rc_vote['result'],
+            'yes': [],
+            'no': [],
+            'not voting': [],
+            'present': [],
+            'speaker': [],
+        }
+        for mem in rc_vote['positions']:
+            mem_id = mem['member_id']
+            pos = mem['vote_position'].lower()
+            vote_dict[pos].append(mem_id)
+    
+    else:
+        vote_dict = None
+        
+    return vote_dict
+
+def batch_insert_rc(db, members):
+    '''
+    Function to batch insert roll call votes
+    '''
+
+    batch = db.batch()
+    mem_num = 0
+    b_num = 1
+    total = 0
+    for mem in members:
+        if mem != None:
+            c = mem['congress']
+            s = mem['session']
+            r = mem['roll_call']
+            _id = f'{c}_{s}_{r}'
+            insert_ref = db.collection("votes").document(_id)
+            batch.set(insert_ref, mem)
+            mem_num += 1
+            total += 1
+            if mem_num > 399:
+                batch.commit()
+                print(f'{mem_num} bills inserted in batch #{b_num}')
+                mem_num = 0
+                b_num += 1
+                batch = db.batch()
+    
+    batch.commit()
+    print(f'{mem_num} bills inserted in batch #{b_num}')
+    print(f'Total inserted: {total}')
