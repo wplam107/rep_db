@@ -2,7 +2,7 @@ from auth import Auth
 from db_functions import get_roll_call_vote, rc_clean, batch_insert_rc
 
 def main():
-    auth = Auth('config.ini')
+    auth = Auth('./auth/config.ini')
 
     # Get ProPublica API Key
     auth.auth_propub()

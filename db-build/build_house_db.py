@@ -3,7 +3,7 @@ from db_functions import get_house_ids, get_member_data, member_cleaner, batch_i
 
 # Script
 def main():
-    auth = Auth('config.ini')
+    auth = Auth('./auth/config.ini')
 
     # Get ProPublica API Key
     auth.auth_propub()

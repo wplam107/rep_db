@@ -129,9 +129,10 @@ dmypy.json
 .pyre/
 
 # API Keys, Authentication
-*.ini
-*.json
-auth.txt
+auth/
 
 # Virtual Environments
 db-env/
+
+# VSCode
+.vscode
