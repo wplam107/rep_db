@@ -133,6 +133,7 @@ auth/
 
 # Virtual Environments
 db-env/
+app-env/
 
 # VSCode
 .vscode
