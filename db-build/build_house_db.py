@@ -19,6 +19,7 @@ def main():
     ids_116 = get_house_ids(116, header, api_root)
     ids_117 = get_house_ids(117, header, api_root)
     all_ids = list(set(ids_116 + ids_117))
+    print('Representative IDs Found...')
 
     # Generator to get member data
     half = int(len(all_ids)/2)
@@ -30,6 +31,7 @@ def main():
     members_insert2 = map(member_cleaner, members2)
 
     # Batch insert members
+    print('Inserting Members...')
     batch_insert_members(members_insert1, db)
     batch_insert_members(members_insert2, db)
 

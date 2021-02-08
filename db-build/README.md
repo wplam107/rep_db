@@ -1,2 +1,2 @@
-# Database build file and containerized database updater
+# Database build file
 - Database: Google Firestore (NoSQL)

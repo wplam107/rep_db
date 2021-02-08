@@ -137,3 +137,6 @@ app-env/
 
 # VSCode
 .vscode
+
+# Temp ignore
+db-update/

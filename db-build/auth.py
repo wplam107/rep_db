@@ -26,8 +26,9 @@ class Auth():
             cred = credentials.Certificate(GCP_AUTH_PATH)
             self.fb_app = firebase_admin.initialize_app(cred)
             self.db = firestore.client()
+            print('Database Authenticated...')
         else:
-            print('Connection already established')
+            print('Connection already established...')
 
     def get_db(self):
         '''
@@ -35,3 +36,10 @@ class Auth():
         '''
 
         return self.db
+
+    def auth_gcp(self):
+        GCP_API_KEY = self.config.get('gcpkeys', 'GCP_API_KEY')
+        self.gcp_key = GCP_API_KEY
+
+    def get_gcp_key(self):
+        return self.gcp_key
