@@ -139,6 +139,9 @@ app-env/
 # VSCode
 .vscode
 
+# Data
+data/
+
 # Temp ignore
 db-update/
 Dockerfile
