@@ -4,8 +4,6 @@ cfg = ConfigParser()
 cfg.read('.ini')
 
 class Config:
-    """Flask configuration variables."""
-
     # General Config
     FLASK_APP = cfg.get('webapp', 'FLASK_APP')
     FLASK_ENV = cfg.get('webapp', 'FLASK_ENV')
