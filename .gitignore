@@ -146,3 +146,6 @@ data/
 db-update/
 Dockerfile
 requirements.txt
+
+# Removed files
+removed/
