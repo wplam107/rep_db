@@ -1,6 +1,18 @@
-# Read/Scrape data
+# Webscraping and API calls
 import requests
+from googleapiclient.discovery import build
+from bs4 import BeautifulSoup
+from mediawiki import MediaWiki
+
+# Utils
+import re
 from datetime import datetime
+from decorators import error_logging
+
+
+########################
+# ProPublica functions #
+########################
 
 def get_house_ids(congress, API_ROOT, header):
     '''
@@ -58,7 +70,12 @@ def member_cleaner(member):
     
     return mem_dict
 
-def batch_insert(docs, db, col_name, _id=None, with_ids=True):
+
+#######################
+# Firestore functions #
+#######################
+
+def batch_insert(docs, db, col_name, _id='id', with_ids=True):
     '''
     Function to batch write to Firestore
     '''
@@ -90,3 +107,69 @@ def batch_insert(docs, db, col_name, _id=None, with_ids=True):
     print(f'Batch {batch_num} Inserted')
     print(f'Inserts: {len(batch.write_results)}')
     print(f'***Total Inserts: {total}')
+
+
+###############
+# Google APIs #
+###############
+
+def kg_id(mem, entities):
+    '''
+    Function to search by Google Entity ID in Google Knowledge Graph
+    '''
+    
+    _id = mem['google_id']
+    r = entities.search(ids=_id).execute()
+    result = r['itemListElement'][0]['result']
+    return result
+
+@error_logging
+def get_wikipedia(mem, entities):
+    '''
+    Get Wikipedia page of US Representative
+    '''
+    
+    result = kg_id(mem, entities)
+    wiki_url = result['detailedDescription']['url']
+    return wiki_url
+
+def kg_search(mem, entities):
+    '''
+    Function to find Google Entity by search
+    '''
+    
+    data = [
+        mem['first_name'],
+        mem['last_name'],
+        'politician'
+    ]
+    query = ' '.join(data)
+    r = entities.search(query=query).execute()
+    result = r['itemListElement'][0]['result'] # Return top result
+    return result
+
+@error_logging
+def get_google_id(mem, entities):
+    '''
+    Get Google Entity ID via Google Knowledge Graph search
+    '''
+    
+    result = kg_search(mem, entities)
+    s = result['@id']
+    _id = re.search('(?<=:).*', s)[0]
+    return _id
+
+
+#######################
+# WikiMedia functions #
+#######################
+
+def url_from_wikimedia(mem):
+    '''
+    Function to get Wikipedia URL of Representative from WikiMedia search
+    '''
+    
+    wikipedia = MediaWiki()
+    name = f"{mem['first_name']} {mem['last_name']} politician"
+    wiki_url = wikipedia.page(name).url
+    return wiki_url
