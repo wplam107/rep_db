@@ -136,6 +136,9 @@ auth/
 db-env/
 app-env/
 
+# JS Dependencies
+node_modules/
+
 # VSCode
 .vscode
 
