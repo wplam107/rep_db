@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "chart.js": "^2.9.4",
-    "firebase": "^8.2.7",
-    "firebase-admin": "^9.5.0"
-  }
-}
