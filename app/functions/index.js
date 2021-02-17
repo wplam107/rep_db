@@ -1,9 +1,22 @@
-const functions = require("firebase-functions");
+// const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const serviceAccount = require(
+    "./auth/rep-database-firebase-adminsdk-5mjsx-1632bf8f78.json"
+);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
+const repsRef = db.collection("reps");
+
+const docsSnapshot = repsRef.limit(3).get();
+const repsData = docsSnapshot.map(doc => {
+    doc.data();
+});
+
+repsData.forEach(rep => {
+    console.log(rep);
+});
