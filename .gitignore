@@ -152,3 +152,6 @@ requirements.txt
 
 # Removed files
 removed/
+
+# Config credentials for web app
+config.js
