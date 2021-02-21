@@ -1,6 +1,10 @@
-import { _firebase } from "./database.js"
+// import { _firebase } from "./database.js"
+import firebase from "firebase/app";
+import "firebase/firestore";
+import { firebaseConfig } from "./config.js";
+firebase.initializeApp(firebaseConfig);
 
-const db = _firebase.firestore();
+const db = firebase.firestore();
 
 window._data = [];
 

@@ -1,9 +1,15 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    database: ['firebase/app', 'firebase/firestore'],
+    index: {
+      import: './src/index.js',
+      dependOn: 'database',
+    },
+  },
   output: {
-    filename: 'main.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'public'),
   },
 };

@@ -155,3 +155,7 @@ removed/
 
 # Config credentials for web app
 config.js
+
+# Webpack compiled files
+*.LICENSE.txt
+*.bundle.js
