@@ -82,7 +82,8 @@ async function barPlot() {
 
   const xAxis = g => g
     .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(xScale).tickSizeOuter(0).attr("font-size", 5));
+    .call(d3.axisBottom(xScale).tickSizeOuter(0))
+    .attr("font-size", 5);
 
   svg.append("g")
       .attr("fill", "steelblue")
