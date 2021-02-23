@@ -2,10 +2,10 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    database: ['firebase/app', 'firebase/firestore'],
+    database: './src/database.js',
     index: {
       import: './src/index.js',
-      dependOn: 'database',
+      dependOn: ['database'],
     },
   },
   output: {
