@@ -156,7 +156,7 @@ def get_rep_data(member_id, api_root, header, entities, wikipedia):
     rep['wiki_url'] = wiki_url
     
     # Missing or wrong google_id in ProPublica data
-    if error == (googleapiclient.errors.HttpError or IndexError):
+    if (error == googleapiclient.errors.HttpError) or (error == IndexError):
         data, error = gkg_search(rep, entities) # Outside function
         gid = data[0]
         wiki_url = data[1]
