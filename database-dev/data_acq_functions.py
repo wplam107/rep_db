@@ -170,3 +170,97 @@ def get_rep_data(member_id, api_root, header, entities, wikipedia):
         
     return rep
 
+
+################################
+# Educational Scrape Functions #
+################################
+
+@error_logging
+def wiki_edu_scrape(wiki_url):
+    '''
+    Function to scrape wikipedia by "Education" or "Alma mater" table row
+    '''
+    
+    r = requests.get(wiki_url).text
+    soup = BeautifulSoup(r)
+    box = soup.find('table', attrs={'class': 'infobox vcard'})
+    try:
+        edus = box.find('th', text='Education').next_sibling
+        edu = [ a.text for a in edus.find_all('a') ]
+    except:
+        edus = box.find('a', attrs={'title': 'Alma mater'})
+        edu = [ a.text for a in edus.parent.next_sibling.find_all('a') ]
+    
+    return edu
+
+@error_logging
+def get_vs_id(rep):
+    '''
+    Function to retrieve missing Vote Smart ID with query
+    '''
+    
+    call_string = f'https://votesmart.org/search?q={rep["first_name"]}+{rep["last_name"]}'
+    r = requests.get(call_string).text
+    soup = BeautifulSoup(r)
+    anchors = soup.find_all('a')
+    for a in anchors:
+        if a.text == f'{rep["first_name"]} {rep["last_name"]}':
+            _id = re.search('(?<=/).*?(?=(?:/))', str(a))[0]
+            break
+    
+    return _id
+
+@error_logging
+def vs_edu_scrape(rep):
+    '''
+    Function to scrape Vote Smart by "Education" <b> element
+    '''
+    
+    url = 'https://justfacts.votesmart.org/candidate/biography/' + rep['votesmart_id']
+    r = requests.get(url).content
+    soup = BeautifulSoup(r)
+
+    # Collapsable card object
+    edu_card = soup.find('b', text='Education').parent.parent.parent
+    
+    # Education paragraph objects
+    edu = [ p.text for p in edu_card.find_all('p') ]
+    
+    edus = []
+    for e in edu:
+        entry = e.split(',')
+        if len(entry[0]) < 5:
+            degree = entry[0]
+            for s in entry[1:]:
+                pattern = '(?=.*College)|(?=.*University)|(?=.*School)|(?=.*Institute)'
+                if re.search(pattern, s):
+                    institution = s.strip()
+                    edus.append([degree, institution])
+    
+    if edus != []:
+        return edus
+    else:
+        return None
+
+@error_logging
+def clean_edu(rep):
+    '''
+    Function to pair degree with institution and standardize non-degrees
+    '''
+    
+    edu = rep['education']
+    
+    edu_list = []
+    for i in range(len(edu)):
+        institute = None
+        degree = None
+        if len(edu[i]) < 10:
+            degree = edu[i]
+            degree = ''.join(degree.split('.')).upper()
+            for j in range(i-1, -1, -1):
+                if len(edu[j]) >= 10:
+                    institute = edu[j]
+                    edu_list.append([degree, institute])
+                    break
+
+    return edu_list
