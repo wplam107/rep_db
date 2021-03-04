@@ -142,9 +142,6 @@ node_modules/
 # VSCode
 .vscode
 
-# Data
-data/
-
 # Temp ignore
 db-update/
 Dockerfile
@@ -159,3 +156,9 @@ config.js
 # Webpack compiled files
 *.LICENSE.txt
 *.bundle.js
+
+# Shapefiles
+tl_*
+
+# Data
+data/
