@@ -6,12 +6,14 @@
     <title>US Reps</title>
     <script defer src="/__/firebase/8.2.9/firebase-app.js"></script>
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css" type="text/css" media="all">
   </head>
   <body>
-    <h2></h2>
-    <div id="usa-container"></div>
-    <div id="state-container"></div>
+    <h1>US Representatives</h1>
+    <div class="container" id="maps-container">
+      <div class="map-container" id="usa-container"></div>
+      <div class="map-container" id="state-container"></div>
+    </div>
     <script src="//d3js.org/d3.v5.min.js"></script>
     <script src="//d3js.org/topojson.v1.min.js"></script>
     <script src="index.js"></script>
