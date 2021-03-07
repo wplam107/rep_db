@@ -29,11 +29,6 @@ const stateSvg = d3.select("#state-container")
   .attr("viewBox", "0 0 300 300")
   .classed("svg-content", true);
 const stateG = stateSvg.append("g")
-// const borderRect = d3.selectAll(".map-svg")
-// 	.append("rect")
-// 	.attr("width", width)
-// 	.attr("height", height)
-//   .classed("rect", true);
 
 /*
 Color schemes
@@ -51,7 +46,6 @@ const projCountry = d3.geoIdentity()
 const statePath = d3.geoPath(projCountry);
 const usaTopo = d3.json("data/USA.topo.json");
 usaTopo.then((usa) => {
-	var region = "State";
 	var states = topojson.feature(usa, usa.objects.data);
 	projCountry.fitSize([width*0.9, height*0.9], states);
 	usaG.selectAll("path")
@@ -62,6 +56,7 @@ usaTopo.then((usa) => {
 		.attr("class", "state")
 		.attr("fill", (d, i) => stateColors(i))
 		.attr("id", (d) => d.properties.id)
+		.attr("data", "none")
 		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
@@ -103,6 +98,7 @@ defaultStateTopo.then((state) => {
 		.attr("class", "cd")
 		.attr("fill", (d, i) => districtColors(i))
 		.attr("id", (d) => d.properties.cd)
+		.attr("data", "none")
 		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
@@ -153,13 +149,25 @@ function mouseMoveHandler(d) {
 	tooltip.text(`${region}: ${regionId}`);
 }
 function mouseOutHandler() {
-	d3.select(this).style("opacity", 0.7);
+	var ifClicked = d3.select(this).attr("data");
+	if (ifClicked == "none") {
+		d3.select(this).style("opacity", 0.7);
+	};
+	console.log(ifClicked);
 	tooltip.transition()
 		.duration(50)
 		.style("opacity", 0);
 }
-function clickHandler(d) {
-	d3.selectAll()
+function clickHandler(d, i) {
+	d3.selectAll(".state")
+		.attr("data", "none")
+		.attr("stroke", "none")
+		.style("opacity", 0.7);
+	d3.select(this)
+		.attr("data", "clicked")
+		.attr("stroke", "black")
+		.attr("stroke-width", "0.1%")
+		.style("opacity", 1);
 	var stateId = d.properties.id;
 	stateClickLabel.text(`State Selected: ${stateId}`);
 	var stateTopo = d3.json(`data/${stateId}.topo.json`);
@@ -182,11 +190,10 @@ function clickHandler(d) {
 			.attr("class", "cd")
 			.attr("fill", (d, i) => districtColors(i))
 			.attr("id", (d) => d.properties.cd)
+			.attr("data", "none")
 			.style("opacity", 0.7)
 			.on("mouseover", mouseOverHandler)
 			.on("mousemove", mouseMoveHandler)
 			.on("mouseout", mouseOutHandler);
 	});
 }
-
-
