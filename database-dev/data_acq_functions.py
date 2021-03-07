@@ -2,6 +2,75 @@ import requests
 import functools
 import re
 import googleapiclient
+from googleapiclient.discovery import build
+import pymongo
+import mediawiki
+import configparser
+from bs4 import BeautifulSoup
+
+# Wrapper for error logging
+def error_logging(func):
+    @functools.wraps(func)
+    def wrapper_error(*args):
+        data = None
+        error = None
+        try:
+            data = func(*args)
+        except Exception as e:
+            error = type(e)
+        return data, error
+    return wrapper_error
+
+
+#############################
+# Authentication and Config #
+#############################
+
+class Auth():
+    def __init__(self, config_file):
+        self.config = configparser.ConfigParser()
+        self.config.read(config_file)
+
+    def get_sections(self):
+        return self.config.sections()
+
+    def get_section_keys(self, section):
+        return self.config._sections[section].keys()
+
+    def get_configs(self, section):
+        values = [ val for val in self.config._sections[section].values() ]
+        return values
+
+    def config_propublica(self):
+        api_key, api_root = self.get_configs('propublica')
+        request_header = {'X-API-Key': f'{api_key}'}
+
+        return api_root, request_header
+
+    def config_gkg(self):
+        api_key, gkg, version = self.get_configs('gcpkeys')
+        service = build(gkg, version, api_key)
+        entities = service.entities()
+
+        return entities
+
+    def config_wiki(self):
+        wiki = mediawiki.MediaWiki()
+
+        return wiki
+
+    def config_opensecrets(self):
+        api_key, api_root = self.get_configs('opensecrets')
+
+        return api_key, api_root
+
+    def config_mongodb(self):
+        uri, mongodb = self.get_configs('mongodb')
+        client = pymongo.MongoClient(uri)
+        db = client.get_database(mongodb)
+
+        return db
+
 
 ########################
 # ProPublica Functions #
@@ -88,19 +157,6 @@ def get_member(member_id, api_root, header):
 # Google Knowledge Graph / MediaWiki Functions #
 ################################################
 
-# Wrapper for error logging
-def error_logging(func):
-    @functools.wraps(func)
-    def wrapper_error(*args):
-        data = None
-        error = None
-        try:
-            data = func(*args)
-        except Exception as e:
-            error = type(e)
-        return data, error
-    return wrapper_error
-
 @error_logging
 def get_wiki_url(rep, entities):
     '''
@@ -182,7 +238,7 @@ def wiki_edu_scrape(wiki_url):
     '''
     
     r = requests.get(wiki_url).text
-    soup = BeautifulSoup(r)
+    soup = BeautifulSoup(r, features="html.parser")
     box = soup.find('table', attrs={'class': 'infobox vcard'})
     try:
         edus = box.find('th', text='Education').next_sibling
@@ -264,3 +320,31 @@ def clean_edu(rep):
                     break
 
     return edu_list
+
+
+##########################
+# Open Secrets Functions #
+##########################
+
+def get_contributions(crp_id, opensec_root, opensec_key):
+    url = opensec_root
+    headers = {
+        'method': 'candSector',
+        'cid': crp_id,
+        'output': 'json',
+        'apikey': opensec_key
+    }
+    r = requests.get(url, params=headers)
+    result = r.json()['response']['sectors']['sector']
+    
+    sectors = []
+    for sector in result:
+        contribution_dict = {
+            'sector': sector['@attributes']['sector_name'],
+            'individual': sector['@attributes']['indivs'],
+            'pacs': sector['@attributes']['pacs'],
+            'total': sector['@attributes']['total']
+        }
+        sectors.append(contribution_dict)
+    
+    return sectors
