@@ -142,13 +142,6 @@ node_modules/
 # VSCode
 .vscode
 
-# Temp ignore
-db-update/
-Dockerfile
-requirements.txt
-db-build/
-app/
-
 # Removed files
 removed/
 

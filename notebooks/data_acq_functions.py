@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 import pymongo
 import mediawiki
 import configparser
-
+from bs4 import BeautifulSoup
 
 # Wrapper for error logging
 def error_logging(func):
@@ -21,7 +21,7 @@ def error_logging(func):
         return data, error
     return wrapper_error
 
-    
+
 #############################
 # Authentication and Config #
 #############################
@@ -238,7 +238,7 @@ def wiki_edu_scrape(wiki_url):
     '''
     
     r = requests.get(wiki_url).text
-    soup = BeautifulSoup(r)
+    soup = BeautifulSoup(r, features="html.parser")
     box = soup.find('table', attrs={'class': 'infobox vcard'})
     try:
         edus = box.find('th', text='Education').next_sibling
