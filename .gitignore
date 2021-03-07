@@ -146,6 +146,8 @@ node_modules/
 db-update/
 Dockerfile
 requirements.txt
+db-build/
+app/
 
 # Removed files
 removed/
@@ -162,3 +164,4 @@ tl_*
 
 # Data
 data/
+
