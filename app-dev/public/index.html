@@ -10,9 +10,13 @@
   </head>
   <body>
     <h1>US Representatives</h1>
+    <div class="grid-container" id="labels-container">
+      <div class="click-label" id="state-click-label"></div>
+      <div class="click-label" id="district-click-label"></div>
+    </div>
     <div class="container" id="maps-container">
-      <div class="map-container" id="usa-container"></div>
-      <div class="map-container" id="state-container"></div>
+      <div class="svg-container" id="usa-container"></div>
+      <div class="svg-container" id="state-container"></div>
     </div>
     <script src="//d3js.org/d3.v5.min.js"></script>
     <script src="//d3js.org/topojson.v1.min.js"></script>

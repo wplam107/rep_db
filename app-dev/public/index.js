@@ -1,43 +1,48 @@
 const width = window.innerWidth * 0.45;
 const height = window.innerHeight * 0.45;
+var stateId = "AL";
 
 /*
-SVG elements and borders
+Text Label and SVG elements and borders
 */
+const stateClickLabel = d3.select("#state-click-label")
+	.text(`State Selected: ${stateId}`);
+const districtClickLabel = d3.select("#district-click-label")
+	.text("District Selected:");
 const usaSvg = d3.select("#usa-container")
 	.append("svg")
 	.attr("width", width)
 	.attr("height", height)
 	.attr("id", "usa-map")
-	.attr("class", "map-svg");
+	.attr("class", "map-svg")
+	.attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 300 300")
+  .classed("svg-content", true);
 const usaG = usaSvg.append("g");
 const stateSvg = d3.select("#state-container")
 	.append("svg")
 	.attr("width", width)
 	.attr("height", height)
 	.attr("id", "state-map")
-	.attr("class", "map-svg");
+	.attr("class", "map-svg")
+	.attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 300 300")
+  .classed("svg-content", true);
 const stateG = stateSvg.append("g")
-const borderRect = d3.selectAll(".map-svg")
-	.append("rect")
-	.attr("width", "100%")
-	.attr("height", "100%")
-	.attr("class", "border")
-	.attr("fill", "none")
-	.attr("stroke", "black")
-	.attr("border", 5);
+// const borderRect = d3.selectAll(".map-svg")
+// 	.append("rect")
+// 	.attr("width", width)
+// 	.attr("height", height)
+//   .classed("rect", true);
 
 /*
 Color schemes
 */
-const stateColors = d3.scaleOrdinal().domain([0, 51]).range([
+const colors = [
 	"#855C75", "#D9AF6B", "#AF6458", "#736F4C", "#526A83", "#625377",
 	"#68855C", "#9C9C5E", "#A06177", "#8C785D", "#467378", "#7C7C7C"
-]);
-const cdColors = [
-	"#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
-	"#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"
 ];
+const stateColors = d3.scaleOrdinal().domain([0, 51]).range(colors);
 
 /*
 National map
@@ -46,6 +51,7 @@ const projCountry = d3.geoIdentity()
 const statePath = d3.geoPath(projCountry);
 const usaTopo = d3.json("data/USA.topo.json");
 usaTopo.then((usa) => {
+	var region = "State";
 	var states = topojson.feature(usa, usa.objects.data);
 	projCountry.fitSize([width*0.9, height*0.9], states);
 	usaG.selectAll("path")
@@ -55,9 +61,10 @@ usaTopo.then((usa) => {
 		.attr("d", statePath)
 		.attr("class", "state")
 		.attr("fill", (d, i) => stateColors(i))
-		// .attr("stroke", "black")
 		.attr("id", (d) => d.properties.id)
+		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
+		.on("mousemove", mouseMoveHandler)
 		.on("mouseout", mouseOutHandler)
 		.on("click", clickHandler);
 });
@@ -77,8 +84,7 @@ usaSvg.call(nationZoom);
 /*
 Default state map
 */
-var stateID = "AL";
-const defaultStateTopo = d3.json(`data/${stateID}.topo.json`);
+const defaultStateTopo = d3.json(`data/${stateId}.topo.json`);
 defaultStateTopo.then((state) => {
 	var cds = topojson.feature(state, state.objects.data);
 	var projState = d3.geoIdentity().reflectY(true);
@@ -87,7 +93,7 @@ defaultStateTopo.then((state) => {
 	var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
   var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 	projState.scale(s).translate(t);
-	const stateColor = d3.scaleOrdinal().domain(cds).range(cdColors);
+	var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 	stateG.selectAll("path")
 		.data(cds.features)
@@ -95,9 +101,12 @@ defaultStateTopo.then((state) => {
 		.append("path")
 		.attr("d", cdPath)
 		.attr("class", "cd")
-		.attr("fill", (d, i) => stateColor(i))
-		// .attr("stroke", "black")
-		.attr("id", (d) => d.properties.cd + stateID);
+		.attr("fill", (d, i) => districtColors(i))
+		.attr("id", (d) => d.properties.cd)
+		.style("opacity", 0.7)
+		.on("mouseover", mouseOverHandler)
+		.on("mousemove", mouseMoveHandler)
+		.on("mouseout", mouseOutHandler);
 });
 
 /*
@@ -115,15 +124,45 @@ stateSvg.call(stateZoom);
 /*
 Event handlers
 */
-function mouseOverHandler() {
-	d3.select(this).attr("fill", "black");
+var tooltip = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+function mouseOverHandler(d) {
+	d3.select(this).style("opacity", 1);
+	tooltip.style("hidden", false);
 }
-function mouseOutHandler(d, i) {
-	d3.select(this).attr("fill", stateColors(i));
-};
+function mouseMoveHandler(d) {
+	tooltip.transition()
+		.duration(50)
+		.style("opacity", 0.9);
+	tooltip.html(d.id)
+		.style("left", `${d3.event.pageX}px`)
+		.style("top", `${d3.event.pageY - 25}px`);
+	if (d.properties.cd) {
+		var region = "District";
+	} else {
+		var region = "State";
+	};
+	if (this.id == "98") {
+		var regionId = "At-Large";
+	} else {
+		var regionId = `${this.id}`;
+	};
+	tooltip.html(d.id)
+		.style("width", `${(region.length + regionId.length + 4) * 8}px`);
+	tooltip.text(`${region}: ${regionId}`);
+}
+function mouseOutHandler() {
+	d3.select(this).style("opacity", 0.7);
+	tooltip.transition()
+		.duration(50)
+		.style("opacity", 0);
+}
 function clickHandler(d) {
-	var stateID = d.properties.id;
-	var stateTopo = d3.json(`data/${stateID}.topo.json`);
+	d3.selectAll()
+	var stateId = d.properties.id;
+	stateClickLabel.text(`State Selected: ${stateId}`);
+	var stateTopo = d3.json(`data/${stateId}.topo.json`);
 	stateTopo.then((state) => {
 		var cds = topojson.feature(state, state.objects.data);
 		var projState = d3.geoIdentity().reflectY(true);
@@ -132,7 +171,7 @@ function clickHandler(d) {
 		var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
 		var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 		projState.scale(s).translate(t);
-		const stateColor = d3.scaleOrdinal().domain(cds).range(cdColors);
+		var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 		d3.selectAll(".cd").remove();
 		stateG.selectAll("path")
@@ -141,9 +180,13 @@ function clickHandler(d) {
 			.append("path")
 			.attr("d", cdPath)
 			.attr("class", "cd")
-			.attr("fill", (d, i) => stateColor(i))
-			// .attr("stroke", "black")
-			.attr("id", (d) => d.properties.cd + stateID);
+			.attr("fill", (d, i) => districtColors(i))
+			.attr("id", (d) => d.properties.cd)
+			.style("opacity", 0.7)
+			.on("mouseover", mouseOverHandler)
+			.on("mousemove", mouseMoveHandler)
+			.on("mouseout", mouseOutHandler);
 	});
 }
+
 

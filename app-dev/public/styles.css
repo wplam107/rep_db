@@ -5,8 +5,40 @@ h1 {
 }
 
 .container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  display: flex;
 }
 
+.click-label {
+  font-family: monospace;
+  font-size: large;
+  text-align: center;
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  font: 12px monospace;
+  height: 14px;
+  padding: 2px;
+  background: rgb(145, 165, 190);
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  background-color: rgb(209, 226, 243);
+}
