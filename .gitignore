@@ -154,6 +154,7 @@ config.js
 
 # Shapefiles
 tl_*
+cb_*
 
 # Data
 data/

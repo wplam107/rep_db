@@ -1,6 +1,6 @@
 const width = window.innerWidth * 0.45;
 const height = window.innerHeight * 0.45;
-var stateId = "AL";
+var stateId = "VT";
 
 /*
 Text Label and SVG elements and borders
@@ -44,7 +44,7 @@ National map
 */
 const projCountry = d3.geoIdentity()
 const statePath = d3.geoPath(projCountry);
-const usaTopo = d3.json("data/USA.topo.json");
+const usaTopo = d3.json("data/usa.topo.json");
 usaTopo.then((usa) => {
 	var states = topojson.feature(usa, usa.objects.data);
 	projCountry.fitSize([width*0.9, height*0.9], states);
@@ -82,12 +82,13 @@ Default state map
 const defaultStateTopo = d3.json(`data/${stateId}.topo.json`);
 defaultStateTopo.then((state) => {
 	var cds = topojson.feature(state, state.objects.data);
-	var projState = d3.geoIdentity().reflectY(true);
+	var projState = d3.geoMercator();//.parallels(parallels);//.reflectY(true);
 	var cdPath = d3.geoPath(projState);
-	var b = cdPath.bounds(cds);
-	var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
-  var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
-	projState.scale(s).translate(t);
+	// var b = cdPath.bounds(cds);
+	// var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
+  	// var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+	// projState.scale(s).translate(t);
+	projState.fitSize([width*0.9, height*0.9], cds);
 	var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 	stateG.selectAll("path")
@@ -97,8 +98,9 @@ defaultStateTopo.then((state) => {
 		.attr("d", cdPath)
 		.attr("class", "cd")
 		.attr("fill", (d, i) => districtColors(i))
-		.attr("id", (d) => d.properties.cd)
+		.attr("id", (d) => d.properties.cd116)
 		.attr("data", "none")
+		.attr("transform", "translate(10, 10)")
 		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
@@ -134,7 +136,7 @@ function mouseMoveHandler(d) {
 	tooltip.html(d.id)
 		.style("left", `${d3.event.pageX}px`)
 		.style("top", `${d3.event.pageY - 25}px`);
-	if (d.properties.cd) {
+	if (d.properties.cd116) {
 		var region = "District";
 	} else {
 		var region = "State";
@@ -173,12 +175,9 @@ function clickHandler(d, i) {
 	var stateTopo = d3.json(`data/${stateId}.topo.json`);
 	stateTopo.then((state) => {
 		var cds = topojson.feature(state, state.objects.data);
-		var projState = d3.geoIdentity().reflectY(true);
+		var projState = d3.geoMercator();
 		var cdPath = d3.geoPath(projState);
-		var b = cdPath.bounds(cds);
-		var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
-		var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
-		projState.scale(s).translate(t);
+		projState.fitSize([width*0.9, height*0.9], cds);
 		var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 		d3.selectAll(".cd").remove();
@@ -189,8 +188,9 @@ function clickHandler(d, i) {
 			.attr("d", cdPath)
 			.attr("class", "cd")
 			.attr("fill", (d, i) => districtColors(i))
-			.attr("id", (d) => d.properties.cd)
+			.attr("id", (d) => d.properties.cd116)
 			.attr("data", "none")
+			.attr("transform", "translate(10, 10)")
 			.style("opacity", 0.7)
 			.on("mouseover", mouseOverHandler)
 			.on("mousemove", mouseMoveHandler)
