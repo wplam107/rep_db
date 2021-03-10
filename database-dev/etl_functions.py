@@ -6,44 +6,35 @@ def clean_edu(collection):
     (i.e. None-> [['HS', 'High School']])
     '''
 
-    results = collection.update_many(
+    results_1 = collection.update_many(
         {'education': None},
         {'$set': {'education': [['HS', 'High School']]}}
     )
-    print(f'Documents updated: {results.modified_count}')
+    results_2 = collection.update_many(
+        {'education': []},
+        {'$set': {'education': [['HS', 'High School']]}}
+    )
+    total = results_1.modified_count + results_2.modified_count
+    print(f'Documents updated: {total}')
 
-def reps_paginated(collection, page_num, limit):
+def et_mongo2firestore(collection, page_num, max_results):
     '''
-    Return paginated reps
-    '''
-
-    skip = page_num * limit
-    results = collection.find({}).sort('_id', pymongo.ASCENDING).skip(skip).limit(limit)
-    reps = [ rep for rep in results ]
-
-    return reps
-
-def state_reps(state):
-    '''
-    Function to get reps by state from MongoDB
+    Extract, transform stage of MongoDB to Firestore
     '''
 
-    match = {
-        '$match': {
-            'in_office': True,
-            'state': state,
-        }
+    match_stage = {
+        '$match': {'in_office': True}
     }
-    add_fields = {
+    fields_stage = {
         '$addFields': {
             'name': {'$concat': ['$first_name',' ', '$last_name']},
             'district': {'$arrayElemAt': ['$roles.district', 0]},
         }
     }
-    unwind = {
+    unwind_stage = {
         '$unwind': '$education'
     }
-    group = {
+    group_stage = {
         '$group': {
             '_id': '$_id',
             'name': {'$first': '$name'},
@@ -57,14 +48,20 @@ def state_reps(state):
             'education': {'$push': {'$arrayElemAt': ['$education', 1]}},
         }
     }
-    sort = {
-        '$sort': {
-            'district': 1,
-        }
+    sort_stage = {
+        '$sort': {'_id': 1}
     }
-    
-    pipeline = [match, add_fields, unwind, group, sort]
+    skip_stage = {
+        '$skip': page_num * max_results
+    }
+    limit_stage = {
+        '$limit': max_results
+    }
+    pipeline = [
+        match_stage, fields_stage, unwind_stage, group_stage,
+        sort_stage, skip_stage, limit_stage
+    ]
     results = collection.aggregate(pipeline)
     reps = [ rep for rep in results ]
-    
+
     return reps
