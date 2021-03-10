@@ -47,7 +47,7 @@ const statePath = d3.geoPath(projCountry);
 const usaTopo = d3.json("data/usa.topo.json");
 usaTopo.then((usa) => {
 	var states = topojson.feature(usa, usa.objects.data);
-	projCountry.fitSize([width*0.9, height*0.9], states);
+	projCountry.fitSize([width*0.85, height*0.85], states);
 	usaG.selectAll("path")
 		.data(states.features)
 		.enter()
@@ -57,6 +57,7 @@ usaTopo.then((usa) => {
 		.attr("fill", (d, i) => stateColors(i))
 		.attr("id", (d) => d.properties.id)
 		.attr("data", "none")
+		.attr("transform", "translate(0, 10)")
 		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
@@ -88,7 +89,7 @@ defaultStateTopo.then((state) => {
 	// var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
   	// var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
 	// projState.scale(s).translate(t);
-	projState.fitSize([width*0.9, height*0.9], cds);
+	projState.fitSize([width*0.8, height*0.8], cds);
 	var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 	stateG.selectAll("path")
@@ -177,7 +178,7 @@ function clickHandler(d, i) {
 		var cds = topojson.feature(state, state.objects.data);
 		var projState = d3.geoMercator();
 		var cdPath = d3.geoPath(projState);
-		projState.fitSize([width*0.9, height*0.9], cds);
+		projState.fitSize([width*0.8, height*0.8], cds);
 		var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
 		d3.selectAll(".cd").remove();
