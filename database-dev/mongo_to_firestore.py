@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from data_acq_functions import Auth
-from etl_functions import *
+from etl_functions import clean_edu, et_mongo2firestore
 
 # Maximum batch writes for Firestore
 MAX_RESULTS = 500
