@@ -1,7 +1,15 @@
 {
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
   "devDependencies": {
     "d3": "^6.5.0",
+    "d3-queue": "^3.0.7",
     "webpack": "^5.24.2",
     "webpack-cli": "^4.5.0"
+  },
+  "dependencies": {
+    "firebase": "^8.2.10"
   }
 }

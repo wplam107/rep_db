@@ -1,6 +1,20 @@
+// import d3 from "d3";
+// import { queue } from "d3-queue";
+
+firebase.initializeApp({
+	apiKey: "AIzaSyCTGMcIXCkLDrNput3HCyE4SsAnj9xRDTI",
+	authDomain: "rep-database.firebaseapp.com",
+	projectId: "rep-database",
+	storageBucket: "rep-database.appspot.com",
+	messagingSenderId: "41407086895",
+	appId: "1:41407086895:web:e3ff15010c902390c721da",
+	measurementId: "G-P77CXJGG34"
+});
+const db = firebase.firestore();
+
 const width = window.innerWidth * 0.45;
 const height = window.innerHeight * 0.45;
-var stateId = "VT";
+var stateId = "AL";
 
 /*
 Text Label and SVG elements and borders
@@ -28,7 +42,8 @@ const stateSvg = d3.select("#state-container")
 	.attr("preserveAspectRatio", "xMinYMin meet")
   .attr("viewBox", "0 0 300 300")
   .classed("svg-content", true);
-const stateG = stateSvg.append("g")
+const stateG = stateSvg.append("g");
+const repsBox = d3.select("#reps");
 
 /*
 Color schemes
@@ -80,15 +95,12 @@ usaSvg.call(nationZoom);
 /*
 Default state map
 */
+var reps = {};
 const defaultStateTopo = d3.json(`data/${stateId}.topo.json`);
 defaultStateTopo.then((state) => {
 	var cds = topojson.feature(state, state.objects.data);
-	var projState = d3.geoMercator();//.parallels(parallels);//.reflectY(true);
+	var projState = d3.geoMercator();
 	var cdPath = d3.geoPath(projState);
-	// var b = cdPath.bounds(cds);
-	// var s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
-  	// var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
-	// projState.scale(s).translate(t);
 	projState.fitSize([width*0.8, height*0.8], cds);
 	var districtColors = d3.scaleOrdinal().domain(cds).range(colors);
 
@@ -99,13 +111,28 @@ defaultStateTopo.then((state) => {
 		.attr("d", cdPath)
 		.attr("class", "cd")
 		.attr("fill", (d, i) => districtColors(i))
-		.attr("id", (d) => d.properties.cd116)
+		.attr("id", (d) => `cd${d.properties.cd116}`)
 		.attr("data", "none")
 		.attr("transform", "translate(10, 10)")
 		.style("opacity", 0.7)
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
 		.on("mouseout", mouseOutHandler);
+
+	db.collection("reps").where("state", "==", `${stateId}`)
+		.get()
+		.then((snapshot) => {
+			reps = {};
+			snapshot.forEach((doc) => {
+				var district = doc.data()['district'].toLocaleString('en-US', {
+					minimumIntegerDigits: 2,
+					useGrouping: false
+				});
+				d3.select(`#cd${district}`)
+					.on("click", districtClick);
+				reps[`cd${district}`] = doc.data();
+			});
+		});
 });
 
 /*
@@ -147,6 +174,7 @@ function mouseMoveHandler(d) {
 	} else {
 		var regionId = `${this.id}`;
 	};
+	if (region == "District") regionId = regionId.slice(2);
 	tooltip.html(d.id)
 		.style("width", `${(region.length + regionId.length + 4) * 8}px`);
 	tooltip.text(`${region}: ${regionId}`);
@@ -156,7 +184,6 @@ function mouseOutHandler() {
 	if (ifClicked == "none") {
 		d3.select(this).style("opacity", 0.7);
 	};
-	console.log(ifClicked);
 	tooltip.transition()
 		.duration(50)
 		.style("opacity", 0);
@@ -189,12 +216,35 @@ function clickHandler(d, i) {
 			.attr("d", cdPath)
 			.attr("class", "cd")
 			.attr("fill", (d, i) => districtColors(i))
-			.attr("id", (d) => d.properties.cd116)
+			.attr("id", (d) => `cd${d.properties.cd116}`)
 			.attr("data", "none")
 			.attr("transform", "translate(10, 10)")
 			.style("opacity", 0.7)
 			.on("mouseover", mouseOverHandler)
 			.on("mousemove", mouseMoveHandler)
 			.on("mouseout", mouseOutHandler);
+
+		db.collection("reps").where("state", "==", `${stateId}`)
+			.get()
+			.then((snapshot) => {
+				reps = {};
+				snapshot.forEach((doc) => {
+					var district = doc.data()['district'].toLocaleString('en-US', {
+						minimumIntegerDigits: 2,
+						useGrouping: false
+					});
+					d3.select(`#cd${district}`)
+						.on("click", districtClick);
+					reps[`cd${district}`] = doc.data();
+				});
+			});
 	});
+}
+
+function districtClick(d) {
+	d3.select(".district-member").remove();
+	var district = this.id;
+	repsBox.append("h3")
+		.attr("class", "district-member")
+		.text(reps[district].name);
 }
