@@ -7,6 +7,7 @@
 - JavaScript Packages:
   - Visualizations: [d3](https://d3js.org/)
 
+- See Also: [Dave's Redistricting App](https://davesredistricting.org/maps#home)
 ## Where things are located
 - [Database and Data Acquisition](https://github.com/wplam107/rep_db/tree/main/database-dev):
   - [Data Acquistion/Cleaning/Processing notebook](https://github.com/wplam107/rep_db/blob/main/database-dev/data_acquisition.ipynb)
