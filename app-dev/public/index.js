@@ -124,10 +124,14 @@ defaultStateTopo.then((state) => {
 		.then((snapshot) => {
 			reps = {};
 			snapshot.forEach((doc) => {
-				var district = doc.data()['district'].toLocaleString('en-US', {
-					minimumIntegerDigits: 2,
-					useGrouping: false
-				});
+				if (doc.data()['district'] == "At-Large") {
+					var district = "00"
+				} else {
+					var district = doc.data()['district'].toLocaleString('en-US', {
+						minimumIntegerDigits: 2,
+						useGrouping: false
+					});
+				};
 				d3.select(`#cd${district}`)
 					.on("click", districtClick);
 				reps[`cd${district}`] = doc.data();
@@ -229,10 +233,14 @@ function clickHandler(d, i) {
 			.then((snapshot) => {
 				reps = {};
 				snapshot.forEach((doc) => {
-					var district = doc.data()['district'].toLocaleString('en-US', {
-						minimumIntegerDigits: 2,
-						useGrouping: false
-					});
+					if (doc.data()['district'] == "At-Large") {
+						var district = "00";
+					} else {
+						var district = doc.data()['district'].toLocaleString('en-US', {
+							minimumIntegerDigits: 2,
+							useGrouping: false
+						});
+					};
 					d3.select(`#cd${district}`)
 						.on("click", districtClick);
 					reps[`cd${district}`] = doc.data();
