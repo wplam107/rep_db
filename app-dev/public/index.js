@@ -111,7 +111,13 @@ defaultStateTopo.then((state) => {
 		.attr("d", cdPath)
 		.attr("class", "cd")
 		.attr("fill", (d, i) => districtColors(i))
-		.attr("id", (d) => `cd${d.properties.cd116}`)
+		.attr("id", (d) => {
+			if (d.properties.cd116 == "98") {
+				return "cd00";
+			} else {
+				return `cd${d.properties.cd116}`;
+			};
+		})
 		.attr("data", "none")
 		.attr("transform", "translate(10, 10)")
 		.style("opacity", 0.7)
@@ -173,12 +179,12 @@ function mouseMoveHandler(d) {
 	} else {
 		var region = "State";
 	};
-	if (this.id == "98") {
+	if (this.id == "cd00") {
 		var regionId = "At-Large";
 	} else {
 		var regionId = `${this.id}`;
 	};
-	if (region == "District") regionId = regionId.slice(2);
+	if (region == "District" && regionId !== "At-Large") {regionId = regionId.slice(2)};
 	tooltip.html(d.id)
 		.style("width", `${(region.length + regionId.length + 4) * 8}px`);
 	tooltip.text(`${region}: ${regionId}`);
@@ -220,7 +226,13 @@ function clickHandler(d, i) {
 			.attr("d", cdPath)
 			.attr("class", "cd")
 			.attr("fill", (d, i) => districtColors(i))
-			.attr("id", (d) => `cd${d.properties.cd116}`)
+			.attr("id", (d) => {
+				if (d.properties.cd116 == "98") {
+					return "cd00";
+				} else {
+					return `cd${d.properties.cd116}`;
+				};
+			})
 			.attr("data", "none")
 			.attr("transform", "translate(10, 10)")
 			.style("opacity", 0.7)
