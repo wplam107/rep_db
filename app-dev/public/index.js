@@ -95,7 +95,7 @@ usaSvg.call(nationZoom);
 /*
 Default state map
 */
-var reps = {};
+const reps = window.sessionStorage;
 const defaultStateTopo = d3.json(`data/${stateId}.topo.json`);
 defaultStateTopo.then((state) => {
 	var cds = topojson.feature(state, state.objects.data);
@@ -124,32 +124,37 @@ defaultStateTopo.then((state) => {
 		.on("mouseover", mouseOverHandler)
 		.on("mousemove", mouseMoveHandler)
 		.on("mouseout", mouseOutHandler);
-
-	db.collection("reps").where("state", "==", `${stateId}`)
-		.get()
-		.then((snapshot) => {
-			reps = {};
-			snapshot.forEach((doc) => {
-				if (doc.data()['district'] == "At-Large") {
-					var district = "00"
-				} else {
-					var district = doc.data()['district'].toLocaleString('en-US', {
-						minimumIntegerDigits: 2,
-						useGrouping: false
-					});
-				};
-				d3.select(`#cd${district}`)
-					.on("click", districtClick);
-				reps[`cd${district}`] = doc.data();
+	
+	if (reps.getItem(stateId) === null) {
+		db.collection("reps").where("state", "==", `${stateId}`)
+			.get()
+			.then((snapshot) => {
+				var stateReps = {};
+				snapshot.forEach((doc) => {
+					if (doc.data()['district'] == "At-Large") {
+						var district = "00"
+					} else {
+						var district = doc.data()['district'].toLocaleString('en-US', {
+							minimumIntegerDigits: 2,
+							useGrouping: false
+						});
+					};
+					d3.select(`#cd${district}`)
+						.on("click", districtClick);
+					stateReps[`cd${district}`] = doc.data();
+				});
+				reps.setItem(`${stateId}`, JSON.stringify(stateReps));
 			});
-		});
+	} else {
+		d3.selectAll(".cd").on("click", districtClick);
+	};
 });
 
 /*
 Zoom for state map
 */
 const stateZoom = d3.zoom()
-    .scaleExtent([1, 8])
+    .scaleExtent([1, 10])
     .on("zoom", stateZoomed);
 function stateZoomed() {
 	stateG.selectAll("path")
@@ -208,7 +213,7 @@ function clickHandler(d, i) {
 		.attr("stroke", "black")
 		.attr("stroke-width", "0.1%")
 		.style("opacity", 1);
-	var stateId = d.properties.id;
+	stateId = d.properties.id;
 	stateClickLabel.text(`State Selected: ${stateId}`);
 	var stateTopo = d3.json(`data/${stateId}.topo.json`);
 	stateTopo.then((state) => {
@@ -239,32 +244,47 @@ function clickHandler(d, i) {
 			.on("mouseover", mouseOverHandler)
 			.on("mousemove", mouseMoveHandler)
 			.on("mouseout", mouseOutHandler);
-
-		db.collection("reps").where("state", "==", `${stateId}`)
-			.get()
-			.then((snapshot) => {
-				reps = {};
-				snapshot.forEach((doc) => {
-					if (doc.data()['district'] == "At-Large") {
-						var district = "00";
-					} else {
-						var district = doc.data()['district'].toLocaleString('en-US', {
-							minimumIntegerDigits: 2,
-							useGrouping: false
-						});
-					};
-					d3.select(`#cd${district}`)
-						.on("click", districtClick);
-					reps[`cd${district}`] = doc.data();
+		
+		if (reps.getItem(stateId) === null) {
+			db.collection("reps").where("state", "==", `${stateId}`)
+				.get()
+				.then((snapshot) => {
+					var stateReps = {};
+					snapshot.forEach((doc) => {
+						if (doc.data()['district'] == "At-Large") {
+							var district = "00";
+						} else {
+							var district = doc.data()['district'].toLocaleString('en-US', {
+								minimumIntegerDigits: 2,
+								useGrouping: false
+							});
+						};
+						d3.select(`#cd${district}`)
+							.on("click", districtClick);
+						stateReps[`cd${district}`] = doc.data();
+					});
+					reps.setItem(`${stateId}`, JSON.stringify(stateReps));
 				});
-			});
+		} else {
+			d3.selectAll(".cd").on("click", districtClick);
+		};
 	});
 }
 
 function districtClick(d) {
+	var stateReps = JSON.parse(reps.getItem(stateId));
+	d3.selectAll(".cd")
+		.attr("data", "none")
+		.attr("stroke", "none")
+		.style("opacity", 0.7);
+	d3.select(this)
+		.attr("data", "clicked")
+		.attr("stroke", "black")
+		.attr("stroke-width", "0.1%")
+		.style("opacity", 1);
 	d3.select(".district-member").remove();
 	var district = this.id;
 	repsBox.append("h3")
 		.attr("class", "district-member")
-		.text(reps[district].name);
+		.text(stateReps[district].name);
 }
