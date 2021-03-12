@@ -159,3 +159,6 @@ cb_*
 # Data
 data/
 
+# Temp files
+etl_and_firestore.ipynb
+webpack.config.js
