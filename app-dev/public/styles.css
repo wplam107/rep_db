@@ -21,9 +21,9 @@ h1 {
   position: absolute;
   text-align: center;
   font: 12px monospace;
-  height: 14px;
+  height: 28px;
   padding: 2px;
-  background: rgb(145, 165, 190);
+  background: rgb(128, 145, 163);
   border: 0px;
   border-radius: 8px;
   pointer-events: none;
@@ -43,5 +43,5 @@ h1 {
   position: absolute;
   top: 10px;
   left: 0;
-  background-color: rgb(209, 226, 243);
+  background-color: rgb(146, 184, 190);
 }
