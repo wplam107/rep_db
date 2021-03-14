@@ -12,14 +12,21 @@
   </head>
   <body>
     <h1>US Representatives</h1>
-    <div class="grid-container" id="labels-container">
-      <div class="click-label" id="state-click-label"></div>
+    <div class="btn-label-container" id="labels-container">
+      <div class="selection-text">Selections:</div>
+      <div class="btn-container">
+        <button id="gender-btn">Gender</button>
+        <select id="select-key"></select>
+      </div>
     </div>
     <div class="container" id="maps-container">
       <div class="svg-container" id="usa-container"></div>
       <div class="svg-container" id="state-container"></div>
     </div>
-    <div id="reps"></div>
+    <div class="selection-text" id="state-click-label"></div>
+    <div id="info">
+      <div id="reps"></div>
+    </div>
     <script src="//d3js.org/d3.v5.min.js"></script>
     <script src="//d3js.org/topojson.v1.min.js"></script>
     <script src="index.js"></script>

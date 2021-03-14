@@ -11,8 +11,8 @@ h1 {
   }
 }
 
-.click-label {
-  font-family: monospace;
+.selection-text {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: large;
   text-align: center;
 }
@@ -39,9 +39,17 @@ h1 {
 }
 
 .svg-content {
-  display: inline-block;
+  display: inline;
   position: absolute;
   top: 10px;
   left: 0;
   background-color: rgb(146, 184, 190);
+}
+
+.btn-label-container {
+  display: inline;
+}
+
+.btn-container {
+  text-align: center;
 }

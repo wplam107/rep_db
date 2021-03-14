@@ -17,8 +17,6 @@ Text Label and SVG elements and borders
 */
 const stateClickLabel = d3.select("#state-click-label")
 	.text(`State Selected: ${stateId}`);
-const districtClickLabel = d3.select("#district-click-label")
-	.text("District Selected:");
 const usaSvg = d3.select("#usa-container")
 	.append("svg")
 	.attr("width", width)
@@ -40,7 +38,6 @@ const stateSvg = d3.select("#state-container")
   .classed("svg-content", true);
 const stateG = stateSvg.append("g");
 const repsBox = d3.select("#reps");
-var stateId = "AL";
 
 /*
 Color schemes
@@ -49,7 +46,6 @@ const colors = [
 	"#855C75", "#D9AF6B", "#AF6458", "#736F4C", "#526A83", "#625377",
 	"#68855C", "#9C9C5E", "#A06177", "#8C785D", "#467378", "#7C7C7C"
 ];
-// const colorScale = d3.scaleThreshold().domain(d3.range(0.1, 1, 0.1)).range(d3.schemeCividis[11]);
 function colorScale(t) {
   return d3.interpolateCividis(t);
 }
@@ -57,20 +53,41 @@ function colorScale(t) {
 /*
 Data
 */
-const stateData = Array();
 const reps = window.sessionStorage;
-
-const getGenderData = db.collection("state_gender").get()
-  .then((snapshot) => {
-    snapshot.docs.forEach((doc) => {
-      var m = doc.data()["M"];
-      var f = doc.data()["F"];
-      var total = m + f;
-      m = m / total;
-      f = f / total;
-      stateData[doc.data()["_id"]] = {"M": m, "F": f};
+const genderData = Array();
+const getGenderData = db.collection("state_gender").get().then((snapshot) => {
+  snapshot.docs.forEach((doc) => {
+    var m = doc.data()["M"];
+    var f = doc.data()["F"];
+    var total = m + f;
+    m = m / total;
+    f = f / total;
+    genderData[doc.data()["_id"]] = {"M": m, "F": f};
+  });
+});
+const eduData = Array();
+const getEduData = db.collection("state_edu").get().then((snapshot) => {
+  snapshot.docs.forEach((doc) => {
+    const total = doc.data()["count"];
+    const state = doc.data()["_id"];
+    eduData[state] = {};
+    const eduDegrees = Object.keys(doc.data());
+    eduDegrees.forEach((degree) => {
+      if (degree !== "_id" && degree !== "count") {
+        const count = doc.data()[degree];
+        eduData[state][degree] = count / total;
+      } else if (degree == "count") {
+        const count = doc.data()[degree];
+        eduData[state][degree] = count;
+      };
     });
   });
+});
+
+/*
+Defaults
+*/
+var stateId = "AL";
 
 /*
 National map
@@ -89,7 +106,7 @@ function nationalMap() {
 			.append("path")
 			.attr("d", statePath)
 			.attr("class", "state")
-			.attr("fill", (d, i) => colorScale(stateData[d.properties.id]["M"]))
+			.attr("fill", (d, i) => colorScale(genderData[d.properties.id]["M"]))
 			.attr("id", (d) => d.properties.id)
 			.attr("data", "none")
 			.attr("transform", "translate(0, 10)")
@@ -124,54 +141,29 @@ function stateMap() {
     var projState = d3.geoMercator();
     var cdPath = d3.geoPath(projState);
     projState.fitSize([width*0.8, height*0.8], cds);
-    Promise.all([getReps]).then(function() {
-      stateG.selectAll("path")
-        .data(cds.features)
-        .enter()
-        .append("path")
-        .attr("d", cdPath)
-        .attr("class", "cd")
-        .attr("id", (d) => {
-          if (d.properties.cd116 == "98") {
-            return "cd00";
-          } else {
-            return `cd${d.properties.cd116}`;
-          };
-        })
-        .attr("data", "none")
-        .attr("transform", "translate(10, 10)")
-        .on("mouseover", mouseOverHandler)
-        .on("mousemove", mouseMoveHandler)
-        .on("mouseout", mouseOutHandler)
-        .on("click", districtClick);
-    }).then(fillDistricts);
-    // Promise.all([getReps]).then(fillDistricts);
-    // if (reps.getItem(stateId) === null) {
-    //   db.collection("reps").where("state", "==", `${stateId}`)
-    //     .get()
-    //     .then((snapshot) => {
-    //       var stateReps = {};
-    //       snapshot.forEach((doc) => {
-    //         if (doc.data()['district'] == "At-Large") {
-    //           var district = "00";
-    //         } else {
-    //           var district = doc.data()['district'].toLocaleString('en-US', {
-    //             minimumIntegerDigits: 2,
-    //             useGrouping: false
-    //           });
-    //         };
-    //         d3.select(`#cd${district}`)
-    //           .on("click", districtClick)
-    //         stateReps[`cd${district}`] = doc.data();
-    //       });
-    //       reps.setItem(`${stateId}`, JSON.stringify(stateReps));
-    //     });
-    // } else {
-    //   d3.selectAll(".cd").on("click", districtClick);
-    // };
-    // var stateReps = JSON.parse(reps[stateId]);
-	  // d3.selectAll(".cd")
-    //   .attr("fill", (d) => colorScale(stateReps[d.id]["gender"]));
+    Promise.all([getReps])
+      .then(function() {
+        stateG.selectAll("path")
+          .data(cds.features)
+          .enter()
+          .append("path")
+          .attr("d", cdPath)
+          .attr("class", "cd")
+          .attr("id", (d) => {
+            if (d.properties.cd116 == "98") {
+              return "cd00";
+            } else {
+              return `cd${d.properties.cd116}`;
+            };
+          })
+          .attr("data", "none")
+          .attr("transform", "translate(10, 10)")
+          .on("mouseover", mouseOverHandler)
+          .on("mousemove", mouseMoveHandler)
+          .on("mouseout", mouseOutHandler)
+          .on("click", districtClick);
+      })
+      .then(fillDistricts);
   });
 }
 
@@ -190,14 +182,10 @@ function getReps() {
               useGrouping: false
             });
           };
-          // d3.select(`#cd${district}`)
-          //   .on("click", districtClick)
           stateReps[`cd${district}`] = doc.data();
         });
         reps.setItem(`${stateId}`, JSON.stringify(stateReps));
       });
-  } else {
-    // d3.selectAll(".cd").on("click", districtClick);
   };
 }
 
@@ -286,4 +274,21 @@ function districtClick(d) {
 	repsBox.append("h3")
 		.attr("class", "district-member")
 		.text(stateReps[district].name);
+}
+
+/*
+Selections
+*/
+Promise.all([getEduData]).then(makeEduDropdown);
+function makeEduDropdown() {
+  d3.select("#edu-dropdown")
+    .selectAll("options")
+    .data(Object.keys(eduData["AL"]))
+    .enter()
+    .append("option")
+    .text((d) => d)
+    .attr("value", (d) => d);
+};
+function updateFill() {
+  
 }
